@@ -25,6 +25,12 @@ description: 以 Playwright MCP 跑花卉電商的 E2E 結帳測試：登入 →
      `BASE_URL` 必須一併覆蓋，否則綠界「返回商店」會回到 `.env` 的 3001。
    - 不改 `.env`，不動 3001 的程序。
 
+3b. **記錄加購前庫存**（唯讀，供收尾對帳）：
+   ```bash
+   sqlite3 -readonly database.sqlite "select stock from products where name='迷你多肉組合盆';"
+   ```
+   記為 `STOCK_BEFORE`。
+
 ## 1. 流程
 
 | # | 動作 | 要點 |
@@ -45,16 +51,36 @@ description: 以 Playwright MCP 跑花卉電商的 E2E 結帳測試：登入 →
 
 截圖用 `browser_take_screenshot`，`filename` 給 `$SHOT_DIR` 下的**絕對路徑**。
 
-## 2. 收尾
+## 2. 資料驗證（唯讀，不改資料庫）
+
+在 `database.sqlite` 以 `sqlite3 -readonly` 查詢：
+
+```bash
+sqlite3 -readonly database.sqlite \
+ "select stock from products where name='迷你多肉組合盆';" \
+ "select order_no,status,total_amount from orders where order_no='<訂單編號，含連字號>';" \
+ "select count(*) from cart_items where user_id=(select id from users where email='<ADMIN_EMAIL>');"
+```
+
+| 檢查 | 通過條件 |
+|---|---|
+| 庫存 | 現在庫存 = `STOCK_BEFORE` − 1 |
+| 訂單 | `status = paid`、金額 = 580 |
+| 購物車 | 該使用者 `cart_items` 為 0 筆 |
+
+任一項不符：照實回報差異，不要自行修資料。
+
+## 3. 收尾
 
 1. 若伺服器是本次啟動的：`kill $(lsof -tiTCP:30001 -sTCP:LISTEN)`。背景任務隨之回報 exit 143 屬正常，非故障。
 2. **回報必須包含**：
    - 步驟結果表（成功／失敗）與訂單編號。
+   - 資料驗證表（庫存前後、訂單狀態、購物車筆數）。
    - **3 張截圖的完整絕對路徑**（缺任何一張即視為測試未完成）。
-   - 兩點聲明：付款是 stage 模擬、無真實扣款；未另行驗證庫存扣減與購物車清空（除非有額外查 API／DB）。
+   - 聲明：付款是 stage 模擬、無真實扣款；每次執行都會留下一筆測試訂單並扣 1 件庫存，不會自動還原。
 3. 可選：`browser_console_messages` 檢視 console error，有則一併列出。
 
-## 3. 失敗處理
+## 4. 失敗處理
 
 - 任一步卡住：立即 `browser_take_screenshot` 留證（存同一資料夾，檔名 `FAIL-<步驟>.png`），回報卡點與頁面狀態，**不硬闖、不繞過驗證**。
 - 綠界 stage 若出現驗證碼或改版：停下回報，與使用者討論。
