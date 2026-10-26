@@ -29,9 +29,9 @@ description: 以 Playwright MCP 跑花卉電商的 E2E 結帳測試：登入 →
 
 | # | 動作 | 要點 |
 |---|------|------|
-| 1 | 開 `http://localhost:30001/login`，填 Email、密碼，按表單內「登入」 | 成功後導回 `/` |
+| 1 | 開 `http://localhost:30001/login`，填 Email、密碼，按表單內「登入」 | 成功後導回 `/`。登入鈕選擇器用 `form button:has-text("登入") >> visible=true`；輸入框用 `input[placeholder='請輸入 Email']`／`input[placeholder='請輸入密碼']`（snapshot 的 ref 跨頁會失效） |
 | 2 | 首頁「探索所有花藝」區任一「加入購物車」 | 實測用「迷你多肉組合盆」NT$ 580（滿 500 免運） |
-| 3 | 開 `/cart`，確認 1 件，按「前往結帳」 | |
+| 3 | 開 `/cart`，確認 1 件，按「前往結帳」 | 選擇器用 `button:has-text("前往結帳") >> visible=true`（響應式版面可能有同名按鈕） |
 | 4 | `/checkout` 填收件人、Email、地址，按「確認送出訂單」 | 測試值：測試用戶／帳號 Email／台北市信義區測試路 1 號。頁面有兩顆同名按鈕（手機版、桌機版），選擇器要加 `>> visible=true` 只點可見者 |
 | 5 | 導向 `payment-stage.ecpay.com.tw` 後，點付款方式「網路ATM」（WebATM） | 使用者口稱的「ATM 網路交易」即此項；**不是**「ATM虛擬帳號」（無銀行可選、不即時付款） |
 | 6 | 銀行下拉選「台灣土地銀行」 | `browser_select_option`，target 用 `#selWebATMBank`，值為 `台灣土地銀行`（非「臺灣」）。`#selATMBank` 屬「ATM虛擬帳號」，不可選錯；用 `select:has(option…)` 會命中兩個而失敗 |
