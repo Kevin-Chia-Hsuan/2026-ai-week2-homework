@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  /* 舊色票（後臺沿用，請勿移除） */
+  --color-rose-primary: #C4727F;
+  --color-rose-dark: #A85B67;
+  --color-rose-light: #E8A5AE;
+  --color-apricot: #D4956A;
+  --color-sage: #7EA584;
+  --color-cream: #FBF8F4;
+  --color-blush: #FFF1EC;
+  --color-rose-bg: #FDEAE4;
+  --color-text-primary: #2C2A28;
+  --color-text-secondary: #6B6560;
+  --color-text-muted: #9A948E;
+
+  /* 前臺新色票（暖色版） */
+  --color-paper: #FBF1E6;
+  --color-ink: #2A1A12;
+  --color-ink-2: #5E4636;
+  --color-muted: #7A6454;
+  --color-line: #E3D3C2;
+  --color-coral: #C8482A;
+  --color-coral-dark: #A23718;
+  --color-cocoa: #3A2418;
+  --color-peach: #FBDFD0;
+  --color-tag: #F4D35E;
+
+  --font-hand: 'LXGW WenKai TC', 'Noto Serif TC', serif;
+}
+
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background-color: var(--color-cream);
+  color: var(--color-text-primary);
+}
+
+/* 前臺 body 以 class 套用，避免影響後臺 */
+body.front {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+}
+
+@layer components {
+  /* 價格吊牌：微傾斜的鵝黃小卡，左上有穿孔 */
+  .price-tag {
+    position: relative;
+    display: inline-block;
+    background-color: var(--color-tag);
+    color: var(--color-ink);
+    padding: 1.375rem 1.25rem 0.75rem;
+    transform: rotate(var(--tag-rot, -4deg));
+    font-family: var(--font-hand);
+  }
+  .price-tag::before {
+    content: "";
+    position: absolute;
+    top: 0.5rem;
+    left: 0.75rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background-color: var(--color-ink);
+  }
+}

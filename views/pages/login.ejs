@@ -1,0 +1,116 @@
+<div id="app">
+  <div class="mx-auto flex max-w-[1440px] flex-col md:min-h-[820px] md:flex-row">
+    <img
+      src="https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=1000"
+      alt="花店一角"
+      class="h-[220px] w-full object-cover md:h-auto md:w-[640px] md:shrink-0"
+    />
+
+    <div class="flex flex-1 flex-col justify-center gap-[26px] px-5 pb-14 pt-9 md:gap-9 md:px-[140px] md:py-16">
+      <h1 class="font-hand text-[32px] font-bold text-cocoa md:text-[40px]">歡迎回到花漾生活</h1>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-line md:gap-8">
+        <button
+          @click="activeTab = 'login'; errors = {}"
+          class="h-12 flex-1 border-b-2 font-hand text-[17px] transition-colors md:flex-none md:px-0 md:text-lg"
+          :class="activeTab === 'login' ? 'border-coral font-bold text-coral' : 'border-transparent text-muted hover:text-ink'"
+        >
+          登入
+        </button>
+        <button
+          @click="activeTab = 'register'; errors = {}"
+          class="h-12 flex-1 border-b-2 font-hand text-[17px] transition-colors md:flex-none md:px-0 md:text-lg"
+          :class="activeTab === 'register' ? 'border-coral font-bold text-coral' : 'border-transparent text-muted hover:text-ink'"
+        >
+          註冊
+        </button>
+      </div>
+
+      <!-- Login Form -->
+      <form v-if="activeTab === 'login'" @submit.prevent="handleLogin" class="flex flex-col gap-6 md:gap-8">
+        <div class="flex flex-col gap-2">
+          <label class="text-[13px] tracking-wide" :class="errors.email ? 'text-coral-dark' : 'text-ink-2'">Email</label>
+          <input
+            v-model="loginForm.email"
+            type="email"
+            placeholder="請輸入 Email"
+            class="h-12 w-full border-0 border-b border-ink bg-transparent text-base placeholder:text-muted focus:border-coral focus:outline-none"
+            :class="{ '!border-b-2 !border-coral': errors.email }"
+          />
+          <p v-if="errors.email" class="text-xs text-coral-dark">{{ errors.email }}</p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-[13px] tracking-wide" :class="errors.password ? 'text-coral-dark' : 'text-ink-2'">密碼</label>
+          <input
+            v-model="loginForm.password"
+            type="password"
+            placeholder="請輸入密碼"
+            class="h-12 w-full border-0 border-b border-ink bg-transparent text-base placeholder:text-muted focus:border-coral focus:outline-none"
+            :class="{ '!border-b-2 !border-coral': errors.password }"
+          />
+          <p v-if="errors.password" class="text-xs text-coral-dark">{{ errors.password }}</p>
+        </div>
+        <button
+          type="submit"
+          :disabled="submitting"
+          class="h-[52px] w-full rounded-full bg-coral text-[15px] tracking-wide text-white transition-colors hover:bg-coral-dark disabled:opacity-50 md:h-14"
+        >
+          {{ submitting ? '登入中...' : '登入' }}
+        </button>
+        <p class="flex justify-center gap-2 text-sm text-ink-2 md:justify-start">
+          還沒有帳號？
+          <button type="button" @click="activeTab = 'register'; errors = {}" class="text-coral-dark underline underline-offset-4">立即註冊</button>
+        </p>
+      </form>
+
+      <!-- Register Form -->
+      <form v-else @submit.prevent="handleRegister" class="flex flex-col gap-6 md:gap-8">
+        <div class="flex flex-col gap-2">
+          <label class="text-[13px] tracking-wide" :class="errors.name ? 'text-coral-dark' : 'text-ink-2'">姓名</label>
+          <input
+            v-model="registerForm.name"
+            type="text"
+            placeholder="請輸入姓名"
+            class="h-12 w-full border-0 border-b border-ink bg-transparent text-base placeholder:text-muted focus:border-coral focus:outline-none"
+            :class="{ '!border-b-2 !border-coral': errors.name }"
+          />
+          <p v-if="errors.name" class="text-xs text-coral-dark">{{ errors.name }}</p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-[13px] tracking-wide" :class="errors.email ? 'text-coral-dark' : 'text-ink-2'">Email</label>
+          <input
+            v-model="registerForm.email"
+            type="email"
+            placeholder="請輸入 Email"
+            class="h-12 w-full border-0 border-b border-ink bg-transparent text-base placeholder:text-muted focus:border-coral focus:outline-none"
+            :class="{ '!border-b-2 !border-coral': errors.email }"
+          />
+          <p v-if="errors.email" class="text-xs text-coral-dark">{{ errors.email }}</p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-[13px] tracking-wide" :class="errors.password ? 'text-coral-dark' : 'text-ink-2'">密碼</label>
+          <input
+            v-model="registerForm.password"
+            type="password"
+            placeholder="至少 6 個字元"
+            class="h-12 w-full border-0 border-b border-ink bg-transparent text-base placeholder:text-muted focus:border-coral focus:outline-none"
+            :class="{ '!border-b-2 !border-coral': errors.password }"
+          />
+          <p v-if="errors.password" class="text-xs text-coral-dark">{{ errors.password }}</p>
+        </div>
+        <button
+          type="submit"
+          :disabled="submitting"
+          class="h-[52px] w-full rounded-full bg-coral text-[15px] tracking-wide text-white transition-colors hover:bg-coral-dark disabled:opacity-50 md:h-14"
+        >
+          {{ submitting ? '註冊中...' : '註冊' }}
+        </button>
+        <p class="flex justify-center gap-2 text-sm text-ink-2 md:justify-start">
+          已經有帳號？
+          <button type="button" @click="activeTab = 'login'; errors = {}" class="text-coral-dark underline underline-offset-4">回到登入</button>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>

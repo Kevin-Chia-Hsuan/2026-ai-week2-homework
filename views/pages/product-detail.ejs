@@ -1,0 +1,91 @@
+<div id="app" data-product-id="<%= productId %>">
+  <div v-if="loading" class="flex justify-center py-24">
+    <div class="h-8 w-8 animate-spin rounded-full border-4 border-coral border-t-transparent"></div>
+  </div>
+
+  <div v-else-if="notFound" class="px-5 py-24 text-center">
+    <h2 class="font-hand text-2xl font-bold text-cocoa">找不到此商品</h2>
+    <p class="mt-2 text-sm text-ink-2">這束花可能已經下架，或網址有誤。</p>
+    <a href="/" class="mt-6 inline-flex h-12 items-center rounded-full bg-coral px-8 text-sm text-white transition-colors hover:bg-coral-dark">回到商品列表</a>
+  </div>
+
+  <div v-else-if="product" class="mx-auto max-w-[1440px] md:px-16 md:pb-24">
+    <!-- 麵包屑（桌面） -->
+    <nav class="hidden items-center gap-2.5 pb-10 pt-7 text-[13px] text-muted md:flex">
+      <a href="/" class="hover:text-coral">首頁</a>
+      <span class="text-line">/</span>
+      <a href="/" class="hover:text-coral">商品列表</a>
+      <span class="text-line">/</span>
+      <span class="text-ink">{{ product.name }}</span>
+    </nav>
+
+    <div class="flex flex-col md:flex-row md:gap-20">
+      <!-- 商品主圖 -->
+      <div class="md:w-[660px] md:shrink-0">
+        <img
+          :src="product.image_url || 'https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=900'"
+          :alt="product.name"
+          class="h-[440px] w-full object-cover md:h-[780px]"
+        />
+      </div>
+
+      <!-- 商品資訊 -->
+      <div class="flex flex-1 flex-col gap-[22px] px-5 pb-12 pt-7 md:gap-[26px] md:px-0 md:pb-0 md:pt-10">
+        <h1 class="font-hand text-4xl font-bold leading-tight text-cocoa md:text-[52px]">{{ product.name }}</h1>
+
+        <div class="flex flex-wrap items-center gap-3.5 md:gap-5">
+          <div class="price-tag" style="--tag-rot: 0deg;">
+            <p class="text-[28px] font-bold md:text-[40px]">NT$ {{ product.price.toLocaleString() }}</p>
+          </div>
+          <span
+            v-if="product.stock > 0"
+            class="inline-flex items-center gap-1.5 rounded-full bg-sage/25 px-3.5 py-1.5 text-[13px] text-emerald-900"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            尚有 {{ product.stock }} 件
+          </span>
+          <span v-else class="inline-flex items-center rounded-full bg-coral/15 px-3.5 py-1.5 text-[13px] text-coral-dark">已售完</span>
+        </div>
+
+        <hr class="border-line">
+
+        <p class="text-[15px] leading-[1.9] text-ink-2 md:text-base md:leading-[2]">{{ product.description }}</p>
+
+        <!-- 數量 -->
+        <div class="flex items-center justify-between md:justify-start md:gap-6">
+          <span class="text-sm tracking-wide text-ink-2">數量</span>
+          <div class="flex items-center rounded-full border border-ink">
+            <button @click="decrease" class="flex h-12 w-12 items-center justify-center font-hand text-xl text-ink-2 transition-colors hover:text-coral" aria-label="減少數量">&minus;</button>
+            <span class="flex h-12 w-12 items-center justify-center font-hand text-lg font-bold">{{ quantity }}</span>
+            <button @click="increase" class="flex h-12 w-12 items-center justify-center font-hand text-xl text-ink-2 transition-colors hover:text-coral" aria-label="增加數量">+</button>
+          </div>
+        </div>
+
+        <button
+          @click="addToCart"
+          :disabled="adding || product.stock <= 0"
+          class="h-[52px] w-full rounded-full bg-coral text-[15px] tracking-wide text-white transition-colors hover:bg-coral-dark disabled:cursor-not-allowed disabled:opacity-50 md:h-14"
+        >
+          {{ product.stock <= 0 ? '已售完' : '加入購物車' }}
+        </button>
+
+        <!-- 購買須知 -->
+        <div class="flex flex-col gap-3.5 bg-peach p-[22px] md:p-7">
+          <h3 class="font-hand text-[17px] font-bold text-cocoa">購買須知</h3>
+          <div class="flex items-center gap-3 text-sm text-ink-2">
+            <svg class="shrink-0 text-coral" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
+            花材依據季節供應，實際花束可能略有差異
+          </div>
+          <div class="flex items-center gap-3 text-sm text-ink-2">
+            <svg class="shrink-0 text-coral" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+            台北市區可享當日配送服務
+          </div>
+          <div class="flex items-center gap-3 text-sm text-ink-2">
+            <svg class="shrink-0 text-coral" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+            消費滿 NT$ 500 享免運優惠
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,133 @@
+<div id="app">
+  <div class="mx-auto max-w-[1440px]">
+    <div class="flex flex-col gap-4 px-5 pb-5 pt-9 md:flex-row md:items-end md:justify-between md:px-16 md:pb-12 md:pt-16">
+      <h1 class="font-hand text-[40px] font-bold text-cocoa md:text-[52px]">結帳</h1>
+      <ol class="flex items-center gap-2.5 text-[13px] md:gap-4">
+        <li class="flex items-center gap-1.5 text-muted"><span class="font-hand text-sm font-bold md:text-base">01</span>購物車</li>
+        <li class="h-px w-4 bg-line md:w-8" aria-hidden="true"></li>
+        <li class="flex items-center gap-1.5 text-ink"><span class="font-hand text-sm font-bold text-coral md:text-base">02</span>收件資訊</li>
+        <li class="h-px w-4 bg-line md:w-8" aria-hidden="true"></li>
+        <li class="flex items-center gap-1.5 text-muted"><span class="font-hand text-sm font-bold md:text-base">03</span>完成訂單</li>
+      </ol>
+    </div>
+
+    <div v-if="loading" class="flex justify-center py-16">
+      <div class="h-8 w-8 animate-spin rounded-full border-4 border-coral border-t-transparent"></div>
+    </div>
+
+    <div v-else class="flex flex-col lg:flex-row lg:items-start lg:gap-20 lg:px-16 lg:pb-24">
+      <!-- 手機：摘要收合列 -->
+      <details class="border-y border-line bg-white lg:hidden">
+        <summary class="flex h-[60px] cursor-pointer list-none items-center justify-between px-5 [&::-webkit-details-marker]:hidden">
+          <span class="flex items-center gap-2 text-sm">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cocoa"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            訂單摘要（{{ cartItems.length }} 件）
+          </span>
+          <span class="flex items-center gap-2 font-hand text-lg font-bold text-coral">
+            NT$ {{ (cartTotal + (cartTotal >= 500 ? 0 : 150)).toLocaleString() }}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-ink-2"><path d="m6 9 6 6 6-6"/></svg>
+          </span>
+        </summary>
+        <div class="flex flex-col gap-3 px-5 pb-5">
+          <div v-for="item in cartItems" :key="item.id" class="flex items-center gap-3 text-sm">
+            <img :src="item.product.image_url || 'https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=120'" :alt="item.product.name" class="h-14 w-12 object-cover" />
+            <span class="flex-1 font-hand text-base font-bold">{{ item.product.name }} <span class="font-sans text-xs font-normal text-muted">× {{ item.quantity }}</span></span>
+            <span class="font-hand font-bold">NT$ {{ (item.product.price * item.quantity).toLocaleString() }}</span>
+          </div>
+        </div>
+      </details>
+
+      <!-- 收件表單 -->
+      <div class="flex flex-1 flex-col gap-7 px-5 pb-7 pt-9 lg:gap-9 lg:px-0 lg:pt-0">
+        <h2 class="font-hand text-2xl font-bold">收件資訊</h2>
+
+        <div class="flex flex-col gap-2 lg:gap-2.5">
+          <label class="text-[13px] tracking-wide" :class="errors.recipientName ? 'text-coral-dark' : 'text-ink-2'">收件人姓名</label>
+          <input
+            v-model="form.recipientName"
+            type="text"
+            placeholder="請輸入收件人姓名"
+            class="h-12 w-full border-0 border-b border-ink bg-transparent text-base placeholder:text-muted focus:border-coral focus:outline-none"
+            :class="{ '!border-b-2 !border-coral': errors.recipientName }"
+          />
+          <p v-if="errors.recipientName" class="text-xs text-coral-dark">{{ errors.recipientName }}</p>
+        </div>
+
+        <div class="flex flex-col gap-2 lg:gap-2.5">
+          <label class="text-[13px] tracking-wide" :class="errors.recipientEmail ? 'text-coral-dark' : 'text-ink-2'">Email</label>
+          <input
+            v-model="form.recipientEmail"
+            type="email"
+            placeholder="請輸入 Email"
+            class="h-12 w-full border-0 border-b border-ink bg-transparent text-base placeholder:text-muted focus:border-coral focus:outline-none"
+            :class="{ '!border-b-2 !border-coral': errors.recipientEmail }"
+          />
+          <p v-if="errors.recipientEmail" class="text-xs text-coral-dark">{{ errors.recipientEmail }}</p>
+        </div>
+
+        <div class="flex flex-col gap-2 lg:gap-2.5">
+          <label class="text-[13px] tracking-wide" :class="errors.recipientAddress ? 'text-coral-dark' : 'text-ink-2'">收件地址</label>
+          <input
+            v-model="form.recipientAddress"
+            type="text"
+            placeholder="請輸入收件地址"
+            class="h-12 w-full border-0 border-b border-ink bg-transparent text-base placeholder:text-muted focus:border-coral focus:outline-none"
+            :class="{ '!border-b-2 !border-coral': errors.recipientAddress }"
+          />
+          <p v-if="errors.recipientAddress" class="text-xs text-coral-dark">{{ errors.recipientAddress }}</p>
+        </div>
+
+        <div class="flex items-center gap-3 bg-peach px-[18px] py-4 text-[13px] text-coral-dark lg:px-[22px] lg:py-[18px]">
+          <svg class="shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+          台北市區可享當日配送，建議於下午 3 點前完成訂購。
+        </div>
+      </div>
+
+      <!-- 手機：金額與送出 -->
+      <div class="flex flex-col gap-3.5 px-5 pb-10 lg:hidden">
+        <div class="flex justify-between text-sm"><span class="text-ink-2">商品小計</span><span>NT$ {{ cartTotal.toLocaleString() }}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-ink-2">運費</span><span>{{ cartTotal >= 500 ? '免運' : 'NT$ 150' }}</span></div>
+        <hr class="border-ink">
+        <div class="flex items-end justify-between">
+          <span class="text-[15px]">總計</span>
+          <span class="font-hand text-[32px] font-bold text-coral">NT$ {{ (cartTotal + (cartTotal >= 500 ? 0 : 150)).toLocaleString() }}</span>
+        </div>
+        <button
+          @click="submitOrder"
+          :disabled="submitting"
+          class="h-[52px] w-full rounded-full bg-coral text-[15px] tracking-wide text-white transition-colors hover:bg-coral-dark disabled:opacity-50"
+        >
+          {{ submitting ? '處理中...' : '確認送出訂單' }}
+        </button>
+      </div>
+
+      <!-- 桌面：訂單摘要 -->
+      <aside class="hidden w-[480px] shrink-0 flex-col gap-5 border border-line bg-white p-9 lg:sticky lg:top-28 lg:flex">
+        <h2 class="font-hand text-2xl font-bold text-cocoa">訂單摘要</h2>
+        <div v-for="item in cartItems" :key="item.id" class="flex items-center gap-4">
+          <img :src="item.product.image_url || 'https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=120'" :alt="item.product.name" class="h-[76px] w-16 object-cover" />
+          <div class="flex flex-1 flex-col gap-1">
+            <span class="font-hand text-base font-bold">{{ item.product.name }}</span>
+            <span class="text-[13px] text-muted">× {{ item.quantity }}</span>
+          </div>
+          <span class="font-hand text-lg font-bold">NT$ {{ (item.product.price * item.quantity).toLocaleString() }}</span>
+        </div>
+        <hr class="border-line">
+        <div class="flex justify-between text-sm"><span class="text-ink-2">商品小計</span><span>NT$ {{ cartTotal.toLocaleString() }}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-ink-2">運費</span><span>{{ cartTotal >= 500 ? '免運' : 'NT$ 150' }}</span></div>
+        <hr class="border-ink">
+        <div class="flex items-end justify-between">
+          <span class="text-[15px]">總計</span>
+          <span class="font-hand text-4xl font-bold text-coral">NT$ {{ (cartTotal + (cartTotal >= 500 ? 0 : 150)).toLocaleString() }}</span>
+        </div>
+        <button
+          @click="submitOrder"
+          :disabled="submitting"
+          class="h-14 w-full rounded-full bg-coral text-[15px] tracking-wide text-white transition-colors hover:bg-coral-dark disabled:opacity-50"
+        >
+          {{ submitting ? '處理中...' : '確認送出訂單' }}
+        </button>
+      </aside>
+    </div>
+  </div>
+</div>
